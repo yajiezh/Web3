@@ -1,0 +1,10 @@
+name = "html-generator"
+compatibility_date = "2023-07-10"
+
+kv_namespaces = [
+    { binding = "HTML_STORE", id = "YOUR_KV_ID" }
+]
+
+[site]
+bucket = "./public"
+entry-point = "./functions"
