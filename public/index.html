@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML生成工具</title>
+    <link href="https://cdn.jsdelivr.net/npm/@tailwindcss/ui@latest/dist/tailwind-ui.min.css" rel="stylesheet">
+    <style>
+        .editor-height {
+            min-height: 300px;
+            max-height: 60vh;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-3xl mx-auto px-4 py-8">
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-6">在线HTML生成器</h1>
+            
+            <div class="mb-6">
+                <label class="block text-gray-700 text-sm font-medium mb-2">输入HTML代码:</label>
+                <textarea 
+                    id="editor" 
+                    class="editor-height w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                    placeholder="<!DOCTYPE html>..."
+                ></textarea>
+            </div>
+
+            <button 
+                onclick="generateLink()"
+                class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+                id="generateBtn"
+            >
+                生成永久链接
+            </button>
+
+            <div id="result" class="mt-6 hidden">
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <p class="text-sm text-gray-600 mb-2">生成链接:</p>
+                    <div class="flex items-center gap-2">
+                        <a 
+                            id="generatedLink" 
+                            target="_blank"
+                            class="text-blue-500 hover:text-blue-600 break-all flex-1"
+                        ></a>
+                        <button
+                            onclick="copyLink()"
+                            class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1.5 rounded-md"
+                        >
+                            复制
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function generateLink() {
+            const editor = document.getElementById('editor');
+            const btn = document.getElementById('generateBtn');
+            const resultDiv = document.getElementById('result');
+            
+            if (!editor.value.trim()) {
+                alert('请输入有效的HTML代码');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '生成中...';
+
+            try {
+                const response = await fetch('/api/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/html' },
+                    body: editor.value
+                });
+
+                if (!response.ok) throw new Error('保存失败');
+                
+                const { id } = await response.json();
+                const link = `${window.location.origin}/page/${id}`;
+
+                document.getElementById('generatedLink').href = link;
+                document.getElementById('generatedLink').textContent = link;
+                resultDiv.classList.remove('hidden');
+            } catch (error) {
+                console.error(error);
+                alert('生成失败，请稍后重试');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '生成永久链接';
+            }
+        }
+
+        function copyLink() {
+            const link = document.getElementById('generatedLink').href;
+            navigator.clipboard.writeText(link).then(() => {
+                alert('链接已复制到剪贴板');
+            });
+        }
+    </script>
+</body>
+</html>
